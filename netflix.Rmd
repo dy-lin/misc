@@ -79,15 +79,16 @@ raw_di %>%
 ```
 
 Plot the data:
-```{r point line}
+```{r point line, out.width='100%'}
 processed %>%
   ggplot(aes(x = Month, colour = User)) +
   geom_line(aes(x = Month, y = count, group = User)) +
   geom_point(aes(x = Month, y = count, color = User), shape = 20) +
-  facet_wrap(~ Year, ncol =3) + 
+  facet_wrap(~ Year, ncol = 3) +
   labs(title = "Netflix Activity",
        x = "Month",
        y = "Count") +
-  theme(axis.text.x = element_text(angle = 90))
+  theme(text = element_text(size = 12),
+        axis.text.x = element_text(angle = 90))
 ```
 
