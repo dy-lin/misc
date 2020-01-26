@@ -1,0 +1,93 @@
+---
+title: "Netflix"
+author: "Diana Lin"
+date: "25/01/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<!--## Netflix-->
+Load the packages:
+```{r load, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(DT)
+```
+
+Read in the Netflix viewing activity:
+```{r di data, message = FALSE}
+raw_di <- read_csv("data/raw/NetflixViewingHistory_Diana.csv")
+raw_bri <- read_csv("data/raw/NetflixViewingHistory_Brian.csv")
+```
+
+### Diana's Viewing Activity
+```{r view di, echo = FALSE}
+datatable(raw_di)
+```
+
+### Brian's Viewing Activity
+```{r view bri, echo = FALSE}
+datatable(raw_bri)
+```
+
+### Data Processing
+Label each item with `User`:
+```{r mutate}
+processed_di <- raw_di %>%
+  mutate(User = "Diana")
+
+processed_bri <- raw_bri %>%
+  mutate(User = "Brian")
+```
+
+
+Combine the datasets together:
+```{r combine}
+data <- rbind(processed_di,processed_bri)
+```
+
+Count the titles:
+```{r count}
+processed <- data %>%
+  filter(year(Date) != 2020) %>%
+  group_by(year(Date), month(Date, label = TRUE), User) %>%
+  summarise(count = n()) %>%
+  rename(Year = `year(Date)`,
+         Month = `month(Date, label = TRUE)`) %>%
+  complete(Year, Month, User) %>%
+  mutate(count = replace_na(count, 0))
+```
+
+
+### Summary
+
+<!-- Plot a bar graph:-->
+```{r bar, echo = FALSE, eval = FALSE}
+raw_di %>%
+  filter(year(Date) != 2020) %>%
+  ggplot(aes(x=month(Date, label = TRUE))) +
+  geom_bar() +
+  facet_wrap(~ year(Date), ncol =3) +
+  labs(title = "Netflix Activity",
+       x = "Month",
+       y = "Count") +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+Plot the data:
+```{r point line}
+processed %>%
+  ggplot(aes(x = Month, colour = User)) +
+  geom_line(aes(x = Month, y = count, group = User)) +
+  geom_point(aes(x = Month, y = count, color = User), shape = 20) +
+  facet_wrap(~ Year, ncol =3) + 
+  labs(title = "Netflix Activity",
+       x = "Month",
+       y = "Count") +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
