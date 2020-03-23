@@ -1,7 +1,7 @@
 ---
 title: "Netflix"
 author: "Diana Lin"
-date: "25/01/2020"
+date: "22/03/2020"
 output: html_document
 ---
 
@@ -16,12 +16,16 @@ library(tidyverse)
 library(lubridate)
 library(knitr)
 library(DT)
+library(here)
+library(plotly)
 ```
 
 Read in the Netflix viewing activity:
 ```{r di data, message = FALSE}
-raw_di <- read_csv("data/raw/NetflixViewingHistory_Diana.csv")
-raw_bri <- read_csv("data/raw/NetflixViewingHistory_Brian.csv")
+raw_di <- read_csv(here("data", "raw", "NetflixViewingHistory_Diana.csv"))
+raw_bri <- read_csv(here("data", "raw", "NetflixViewingHistory_Brian.csv"))
+raw_vic <- read_csv(here("data", "raw", "NetflixViewingHistory_Vicky.csv"))
+raw_kev <- read_csv(here("data", "raw", "NetflixViewingHistory_Kevin.csv"))
 ```
 
 ### Diana's Viewing Activity
@@ -34,6 +38,16 @@ datatable(raw_di)
 datatable(raw_bri)
 ```
 
+### Vicky's Viewing Activity
+```{r view vic, echo = FALSE}
+datatable(raw_vic)
+```
+
+### Kevin's Viewing Activity
+```{r view kev, echo = FALSE}
+datatable(raw_kev)
+```
+
 ### Data Processing
 Label each item with `User`:
 ```{r mutate}
@@ -42,18 +56,23 @@ processed_di <- raw_di %>%
 
 processed_bri <- raw_bri %>%
   mutate(User = "Brian")
+
+processed_vic <- raw_vic %>%
+  mutate(User = "Vicky")
+
+processed_kev <- raw_kev %>%
+  mutate(User = "Kevin")
 ```
 
 
 Combine the datasets together:
 ```{r combine}
-data <- rbind(processed_di,processed_bri)
+data <- rbind(processed_di,processed_bri,processed_vic,processed_kev)
 ```
 
 Count the titles:
 ```{r count}
 processed <- data %>%
-  filter(year(Date) != 2020) %>%
   group_by(year(Date), month(Date, label = TRUE), User) %>%
   summarise(count = n()) %>%
   rename(Year = `year(Date)`,
@@ -80,15 +99,36 @@ raw_di %>%
 
 Plot the data:
 ```{r point line, out.width='100%'}
-processed %>%
-  ggplot(aes(x = Month, colour = User)) +
+history <- processed %>%
+  filter(Year != 2020) %>%
+  ggplot(aes(x = Month, colour = User, text = paste0("Month: ", Month, "</br></br> Count: ", count))) +
   geom_line(aes(x = Month, y = count, group = User)) +
   geom_point(aes(x = Month, y = count, color = User), shape = 20) +
   facet_wrap(~ Year, ncol = 3) +
-  labs(title = "Netflix Activity",
+  labs(title = "Netflix Viewing History",
        x = "Month",
        y = "Count") +
   theme(text = element_text(size = 12),
         axis.text.x = element_text(angle = 90))
+
+ggplotly(history, tooltip = c("text"))
+```
+
+Plot the 2020 data:
+```{r point line current, out.width='100%'}
+tt <- data %>%
+  filter(year(Date) == 2020) %>%
+  group_by(Date, User) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(x = Date, colour = User, text = paste0("Date: ", month(Date, label = TRUE), " ", day(Date), ", ", year(Date), "</br></br>Count: ",count))) +
+  geom_line(aes(x = Date, y = count, group = User)) +
+  geom_point(aes(x = Date, y = count, color = User), shape = 20) +
+  labs(title = "Netflix Viewing (2020)",
+       x = "Date",
+       y = "Count") +
+  theme(text = element_text(size = 12),
+        axis.text.x = element_text(angle = 90))
+
+ggplotly(tt, tooltip = c("text"))
 ```
 
