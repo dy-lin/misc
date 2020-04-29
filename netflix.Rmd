@@ -1,7 +1,7 @@
 ---
 title: "Netflix"
 author: "Diana Lin"
-date: "22/03/2020"
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
@@ -111,6 +111,10 @@ history <- processed %>%
   theme(text = element_text(size = 12),
         axis.text.x = element_text(angle = 90))
 
+print(history)
+```
+
+```{r ggplotly-all, eval = FALSE, include=FALSE}
 ggplotly(history, tooltip = c("text"))
 ```
 
@@ -129,6 +133,32 @@ tt <- data %>%
   theme(text = element_text(size = 12),
         axis.text.x = element_text(angle = 90))
 
+print(tt)
+```
+
+```{r, ggplotly-2020, eval = FALSE, include=FALSE}
 ggplotly(tt, tooltip = c("text"))
 ```
 
+Plot the Quarantine Data (March 14-Present):
+
+```{r quarantine}
+q <- data %>%
+  filter(Date > date("2020-03-13")) %>%
+  group_by(Date, User) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(x = Date, colour = User, text = paste0("Date: ", month(Date, label = TRUE), " ", day(Date), ", ", year(Date), "</br></br>Count: ",count))) +
+  geom_line(aes(x = Date, y = count, group = User)) +
+  geom_point(aes(x = Date, y = count, color = User), shape = 20) +
+  labs(title = "Netflix Viewing (Quarantine)",
+       subtitle = "March 14 to present",
+       x = "Date",
+       y = "Count") +
+  theme(text = element_text(size = 12))
+  
+print(q)
+```
+
+```{r, ggplotly-2020-q, eval = FALSE, include=FALSE}
+ggplotly(q, tooltip = c("text"))
+```
