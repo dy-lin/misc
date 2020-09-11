@@ -1,0 +1,123 @@
+#!/bin/bash
+set -euo pipefail
+PROGRAM=$(basename $0)
+function get_help() {
+	echo "DESCRIPTION:" 1>&2
+	echo -e " \
+		\tUses FFmpeg to convert video to audio. By default, this script converts mp4 files to wav.\n \
+		" | column -s $'\t' -t 1>&2
+	echo 1>&2
+
+	echo "USAGE(S):" 1>&2
+
+	if ls ffmpeg &> /dev/null
+	then
+		localdir=true
+		prefix="./"
+	else
+		localdir=false
+		prefix=""
+	fi
+
+	echo -e " \
+		\t${prefix}${PROGRAM} -i <input> -o <output>\n \
+		" | column -s $'\t' -t 1>&2
+	echo 1>&2
+
+	echo "OPTION(S):" 1>&2
+	echo -e " \
+		\t-a <format>\taudio format\t(default = wav)\n \
+		\t-d\tdebug mode (stderr > stdout)\n \
+		\t-h\tshow this help menu\n \
+		\t-i <directory OR file>\tinput directory or single file\n \
+		\t-o <directory OR file>\toutput directory or single file\n \
+		\t-v <format>\tvideo format\t(default = mp4)\n \
+		" | column -s $'\t' -t 1>&2
+	echo 1>&2
+
+	echo "EXAMPLE(S):" 1>&2
+	echo -e " \
+		\t${prefix}${PROGRAM} -i /path/to/input/directory -o /path/to/output/directory\n \
+		\t${prefix}${PROGRAM} -i /path/to/input/file -o /path/to/output/directory\n \
+		\t${prefix}${PROGRAM} -i /path/to/input/file -o /path/to/output/file\n \
+		" | column -s $'\t' -t 1>&2
+	exit 1
+}
+
+if [[ "$#" -eq 0 ]]
+then
+	get_help
+fi
+args=$(echo $* | tr ' ' '\n' | grep -c "-")
+for i in  $(seq 2 $(( args + 1 )) )
+do
+	num_args=$(echo $* | awk -v var="$i" -F "-i |-o |-v |-a " '{print $(var)}' | awk '{print NF}')
+	if [[ "$num_args" -ne 1 ]]
+	then
+		echo "ERROR: Each option only supports ONE argument. No wildcards allowed." 1>&2; printf '%.0s=' $(seq $(tput cols)) 1>&2; echo 1>&2; get_help;
+		exit 2
+	fi
+done
+audio=wav
+video=mp4
+debug=/dev/null
+
+# check that -i only provides 1 argument, that its NOT a wildcard
+echo $* | awk "-?"
+while getopts :a:dhi:o:v: opt
+do
+	case $opt in 
+		h) get_help;;
+		d) debug=/dev/stdout;;
+		i) indir=$(realpath "$OPTARG");;
+		o) outdir=$(realpath "$OPTARG");;
+		a) audio="$OPTARG";;
+		v) video="$OPTARG";;
+		\?) echo "ERROR: Invalid option: -$OPTARG" 1>&2; printf '%.0s=' $(seq $(tput cols)) 1>&2; echo 1>&2; get_help;;
+	esac
+done
+
+shift $((OPTIND-1))
+if ! command -v ffmpeg &> /dev/null
+then
+	echo "ERROR: FFmpeg not found!" 1>&2
+	exit 2
+fi
+
+if [[ -z "$indir" || -z "$outdir" ]]
+then
+	echo "ERROR: No arguments given!" 1>&2; printf '%.0s=' $(seq $(tput cols)) 1>&2; echo 1>&2; get_help;
+fi
+
+shopt -s nocaseglob
+if [[ -f $indir  && -d $outdir ]]
+then
+	# input is a single file, output is the directory
+	file=$(basename $indir)
+	outfile=$outdir/${file#.*}.${audio}
+	ffmpeg -y -i $indir -f ${audio} $outfile 2> $debug
+	echo "$(basename $indir) successfully converted to ${audio} in $(basename $outdir)." 1>&2
+elif [[ -f $indir && -d $(dirname $outdir) ]]
+then
+	# input is a single file, and output is a single file
+	ffmpeg -y -i $indir -f ${audio} $outdir 2> $debug
+	echo "$(basename $indir) successfully converted to $(basename $outdir)." 1>&2
+elif [[ -d $indir && -d $outdir ]]
+then
+	# input and output are directories
+	for i in $indir/*.${video}
+	do
+		file=$(basename $indir)
+		outfile=$outdir/${file#.*}.${audio}
+		ffmpeg -y -i $i -f ${audio} $outfile 2> $debug
+	done
+	num=$(ls $indir/*.${video} 2> /dev/null |  wc -l)
+	echo "$num ${video} videos in $(basename $indir) successfully converted to ${audio} in $(basename $outdir)." 1>&2
+elif [[ -d $indir && -d $(dirname $outdir) ]]
+then
+	echo "ERROR: Output cannot be a file if the input is a directory!"
+	exit 2
+else
+	echo "ERROR: Given argument files or directories do not exist!"
+	exit 2
+fi
