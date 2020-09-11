@@ -62,8 +62,6 @@ audio=wav
 video=mp4
 debug=/dev/null
 
-# check that -i only provides 1 argument, that its NOT a wildcard
-echo $* | awk "-?"
 while getopts :a:dhi:o:v: opt
 do
 	case $opt in 
@@ -118,6 +116,15 @@ then
 	echo "ERROR: Output cannot be a file if the input is a directory!"
 	exit 2
 else
-	echo "ERROR: Given argument files or directories do not exist!"
+	if [[ ! -e $indir && ! -e $outdir ]]
+	then
+		echo "ERROR: Given input and output files or directories do not exist!"
+	elif [[ ! -e $indir  ]]
+	then	
+		echo "ERROR: Given input files or directories do not exist!"
+	elif [[ ! -e $outdir ]]
+	then
+		echo "ERROR: Given output files or directories do not exist!"
+	fi
 	exit 2
 fi
