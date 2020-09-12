@@ -1,0 +1,55 @@
+#!/bin/bash
+
+set -euo pipefail
+PROGRAM=$(basename $0)
+
+function get_help() {
+	echo "DESCRIPTION:" 1>&2
+	echo -e " \
+		\tRenames files.\n \
+		" | column -s $'\t' -t 1>&2
+	echo 1>&2
+
+	echo "USAGE(S):" 1>&2
+	echo -e " \
+		\t./$PROGRAM -d <directory> -n <name>\n \
+		" | column -s $'\t' -t 1>&2
+	echo 1>&2
+
+	echo "OPTION(S):" 1>&2
+	echo -e " \
+		\t-d <directory>\tdirectory where files to be renamed are\n \
+		\t-h\tshow this help menu\n \
+		\t-n <filename>\tnew filename\n \
+		" | column -s $'\t' -t 1>&2
+	echo 1>&2
+	exit 1
+}
+
+if [[ "$#" -eq 0 ]]
+then
+	get_help
+fi
+
+while getopts :hd:n: opt
+do
+	case $opt in
+		h) get_help;;
+		d) dir="$(realpath $OPTARG)";;
+		n) name="$OPTARG";;
+		\?) echo "ERROR: Invalid option: -$OPTARG" 1>&2; printf '%.0s=' $(seq $(tput cols)) 1>&2; echo 1>&2; get_help;;
+	esac
+done
+
+shift $((OPTIND-1))
+
+count=1
+
+for i in $dir/*
+do
+	dirname=$(dirname $i)
+	ext=${i#*.}
+	count=$((count+1))
+#	echo $ext
+	mv $i $dirname/${name}_${count}.${ext}
+done		
