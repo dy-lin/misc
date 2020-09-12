@@ -55,7 +55,7 @@ for i in $dir/*
 do
 	dirname=$(dirname $i)
 	ext=${i#*.}
-	count=$((count+1))
 #	echo $ext
 	mv $i $dirname/${name}_${count}.${ext}
+	count=$((count+1))
 done		
