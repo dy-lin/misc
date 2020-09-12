@@ -19,6 +19,7 @@ function get_help() {
 	echo "OPTION(S):" 1>&2
 	echo -e " \
 		\t-d <directory>\tdirectory where files to be renamed are\n \
+		\t-e <extension>\tfile extension\n \
 		\t-h\tshow this help menu\n \
 		\t-n <filename>\tnew filename\n \
 		" | column -s $'\t' -t 1>&2
@@ -30,11 +31,12 @@ if [[ "$#" -eq 0 ]]
 then
 	get_help
 fi
-
-while getopts :hd:n: opt
+ext=""
+while getopts :hd:e:n: opt
 do
 	case $opt in
 		h) get_help;;
+		e) ext="$OPTARG";;
 		d) dir="$(realpath $OPTARG)";;
 		n) name="$OPTARG";;
 		\?) echo "ERROR: Invalid option: -$OPTARG" 1>&2; printf '%.0s=' $(seq $(tput cols)) 1>&2; echo 1>&2; get_help;;
@@ -49,13 +51,19 @@ then
 	exit 2
 fi
 
-count=1
+if [[ ! -z "$ext" ]]
+then
+	if [[ "$ext" != .* ]]
+	then
+		ext=.${ext}
+	fi
+fi
 
-for i in $dir/*
+count=1
+for i in $dir/*${ext}
 do
 	dirname=$(dirname $i)
-	ext=${i#*.}
 #	echo $ext
-	mv $i $dirname/${name}_${count}.${ext}
+	mv $i $dirname/${name}_${count}${ext}
 	count=$((count+1))
 done		
