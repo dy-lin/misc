@@ -43,6 +43,12 @@ done
 
 shift $((OPTIND-1))
 
+if [[ ! -d $dir ]]
+then
+	echo "ERROR: Given directory does not exist!" 1>&2
+	exit 2
+fi
+
 count=1
 
 for i in $dir/*
