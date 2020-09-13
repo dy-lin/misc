@@ -12,18 +12,29 @@ function get_help() {
 
 	echo "USAGE(S):" 1>&2
 	echo -e " \
-		\t$PROGRAM -d <directory> -n <name>\n \
+		\t$PROGRAM -d <directory> -n <name> -e <extension>\n \
 		" | column -s $'\t' -t 1>&2
 	echo 1>&2
 
 	echo "OPTION(S):" 1>&2
 	echo -e " \
 		\t-d <directory>\tdirectory where files to be renamed are\n \
-		\t-e <extension>\tfile extension\n \
+		\t-e <extension>\tfile extension\t(highly suggested)\n \
 		\t-h\tshow this help menu\n \
 		\t-n <filename>\tnew filename\n \
 		" | column -s $'\t' -t 1>&2
 	echo 1>&2
+	echo "EXAMPLE(S):" 1>&2
+	echo -e " \
+		\t$PROGRAM -d /path/to/directory -n NAME -e .JPG\n \
+		" | column -s $'\t' -t 1>&2
+	echo 1>&2
+	echo "EXAMPLE OUTPUT:" 1>&2
+	echo -e " \
+		\tTEXT1.MP4 --> NAME_1.MP4\n \
+		" | column -s $'\t' -t 1>&2
+	echo 1>&2
+
 	exit 1
 }
 

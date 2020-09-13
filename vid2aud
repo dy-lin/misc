@@ -2,7 +2,8 @@
 set -uo pipefail
 PROGRAM=$(basename $0)
 function get_help() {
-	echo "DESCRIPTION:" 1>&2 echo -e " \
+	echo "DESCRIPTION:" 1>&2
+	echo -e " \
 		\tUses FFmpeg to convert video to audio. By default, this script converts mp4 files to wav.\n \
 		" | column -s $'\t' -t 1>&2
 	echo 1>&2
@@ -100,13 +101,13 @@ then
 		ffmpeg -y -i $i -f ${audio} $outfile 2> $debug
 	done
 	
-	num=$(ls $outdir/*.${audio} 2> /dev/null |  wc -l)
-	num_total=$(ls $indir/*.${video} 2> /dev/null | wc -l)
+	num=$(ls $outdir/*.${audio} 2> /dev/null |  wc -l | tr -d ' ')
+	num_total=$(ls $indir/*.${video} 2> /dev/null | wc -l | tr -d ' ')
 	echo "${num}/${num_total} ${video} videos in $(basename $indir) successfully converted to ${audio} in $(basename $outdir)." 1>&2
 	if [[ "$num" -ne "$num_total" ]]
 	then
 		echo "These videos failed to convert:" 1>&2
-		grep -wvf <( ls $outdir/*.${audio} 2> /dev/null | sed 's/\..\+$//' | awk -F "/" '{print $NF}') <(ls $indir/*.${video} 2> /dev/null | sed 's/\..\+$//' | awk -F "/" '{print $NF}')
+		grep -wvf <( ls $outdir/*.${audio} 2> /dev/null | sed 's/\..\+$//' | awk -F "/" '{print $NF}') <(ls $indir/*.${video} 2> /dev/null | sed 's/\..\+$//' | awk -F "/" '{print $NF}') | sed 's/^/\t/'
 	fi
 elif [[ -d $indir && -d $(dirname $outdir) ]]
 then
