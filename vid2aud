@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -uo pipefail
 PROGRAM=$(basename $0)
 function get_help() {
 	echo "DESCRIPTION:" 1>&2 echo -e " \
@@ -77,7 +77,6 @@ then
 	echo "ERROR: No arguments given!" 1>&2; printf '%.0s=' $(seq $(tput cols)) 1>&2; echo 1>&2; get_help;
 fi
 
-shopt -s nocaseglob
 if [[ -f $indir  && -d $outdir ]]
 then
 	# input is a single file, output is the directory
@@ -93,13 +92,14 @@ then
 elif [[ -d $indir && -d $outdir ]]
 then
 	# input and output are directories
+	shopt -s nocaseglob
 	for i in $indir/*.${video}
 	do
-		file=$(basename $i ".${video}")
+		file=$(basename $i)
 		outfile=$outdir/${file#.*}.${audio}
 		ffmpeg -y -i $i -f ${audio} $outfile 2> $debug
 	done
-	num=$(ls $indir/*.${video} 2> /dev/null |  wc -l)
+	num=$(ls $outdir/*.${audio} 2> /dev/null |  wc -l)
 	echo "$num ${video} videos in $(basename $indir) successfully converted to ${audio} in $(basename $outdir)." 1>&2
 elif [[ -d $indir && -d $(dirname $outdir) ]]
 then
