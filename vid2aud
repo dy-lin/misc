@@ -9,18 +9,8 @@ function get_help() {
 	echo 1>&2
 
 	echo "USAGE(S):" 1>&2
-
-	if ls ffmpeg &> /dev/null
-	then
-		localdir=true
-		prefix="./"
-	else
-		localdir=false
-		prefix=""
-	fi
-
 	echo -e " \
-		\t${prefix}${PROGRAM} -i <input> -o <output>\n \
+		\t${PROGRAM} -i <input> -o <output>\n \
 		" | column -s $'\t' -t 1>&2
 	echo 1>&2
 
@@ -37,9 +27,9 @@ function get_help() {
 
 	echo "EXAMPLE(S):" 1>&2
 	echo -e " \
-		\t${prefix}${PROGRAM} -i /path/to/input/directory -o /path/to/output/directory\n \
-		\t${prefix}${PROGRAM} -i /path/to/input/file -o /path/to/output/directory\n \
-		\t${prefix}${PROGRAM} -i /path/to/input/file -o /path/to/output/file\n \
+		\t${PROGRAM} -i /path/to/input/directory -o /path/to/output/directory\n \
+		\t${PROGRAM} -i /path/to/input/file -o /path/to/output/directory\n \
+		\t${PROGRAM} -i /path/to/input/file -o /path/to/output/file\n \
 		" | column -s $'\t' -t 1>&2
 	exit 1
 }
@@ -76,6 +66,7 @@ do
 done
 
 shift $((OPTIND-1))
+
 if ! command -v ffmpeg &> /dev/null
 then
 	echo "ERROR: FFmpeg not found!" 1>&2
