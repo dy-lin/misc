@@ -106,7 +106,7 @@ then
 	if [[ "$num" -ne "$num_total" ]]
 	then
 		echo "These videos failed to convert:" 1>&2
-		grep -wvf <(ls $indir/*.${video} 2> /dev/null | sed 's/\..\+$//') <( ls $outdir/*.${audio} 2> /dev/null )
+		grep -wvf <(ls $indir/*.${video} 2> /dev/null | sed 's/\..\+$//' | awk -F "/" '{print $NF}') <( ls $outdir/*.${audio} 2> /dev/null | sed 's/\..\+$//' | awk -F "/" '{print $NF}')
 	fi
 elif [[ -d $indir && -d $(dirname $outdir) ]]
 then
