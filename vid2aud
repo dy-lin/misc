@@ -2,8 +2,7 @@
 set -euo pipefail
 PROGRAM=$(basename $0)
 function get_help() {
-	echo "DESCRIPTION:" 1>&2
-	echo -e " \
+	echo "DESCRIPTION:" 1>&2 echo -e " \
 		\tUses FFmpeg to convert video to audio. By default, this script converts mp4 files to wav.\n \
 		" | column -s $'\t' -t 1>&2
 	echo 1>&2
@@ -38,7 +37,7 @@ if [[ "$#" -eq 0 ]]
 then
 	get_help
 fi
-args=$(echo $* | tr ' ' '\n' | grep -c "-")
+args=$(echo $* |sed 's/-d//' | tr ' ' '\n' | grep -c "-")
 for i in  $(seq 2 $(( args + 1 )) )
 do
 	num_args=$(echo $* | awk -v var="$i" -F "-i |-o |-v |-a " '{print $(var)}' | awk '{print NF}')
