@@ -12,7 +12,7 @@ function get_help() {
 
 	echo "USAGE(S):" 1>&2
 	echo -e " \
-		\t./$PROGRAM -d <directory> -n <name>\n \
+		\t$PROGRAM -d <directory> -n <name>\n \
 		" | column -s $'\t' -t 1>&2
 	echo 1>&2
 
