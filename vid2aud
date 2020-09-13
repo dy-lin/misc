@@ -96,11 +96,18 @@ then
 	for i in $indir/*.${video}
 	do
 		file=$(basename $i)
-		outfile=$outdir/${file#.*}.${audio}
+		outfile=$outdir/${file%.*}.${audio}
 		ffmpeg -y -i $i -f ${audio} $outfile 2> $debug
 	done
+	
 	num=$(ls $outdir/*.${audio} 2> /dev/null |  wc -l)
-	echo "$num ${video} videos in $(basename $indir) successfully converted to ${audio} in $(basename $outdir)." 1>&2
+	num_total=$(ls $indir/*.${video} 2> /dev/null | wc -l)
+	echo "${num}/${num_total} ${video} videos in $(basename $indir) successfully converted to ${audio} in $(basename $outdir)." 1>&2
+	if [[ "$num" -ne "$num_total" ]]
+	then
+		echo "These videos failed to convert:" 1>&2
+		grep -wvf <(ls $indir/*.${video} 2> /dev/null | sed 's/\..\+$//') <( ls $outdir/*.${audio} 2> /dev/null )
+	fi
 elif [[ -d $indir && -d $(dirname $outdir) ]]
 then
 	echo "ERROR: Output cannot be a file if the input is a directory!"
