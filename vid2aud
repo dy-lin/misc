@@ -82,7 +82,7 @@ if [[ -f $indir  && -d $outdir ]]
 then
 	# input is a single file, output is the directory
 	file=$(basename $indir)
-	outfile=$outdir/${file#.*}.${audio}
+	outfile=$outdir/${file%.*}.${audio}
 	ffmpeg -y -i $indir -f ${audio} $outfile 2> $debug
 	echo "$(basename $indir) successfully converted to ${audio} in $(basename $outdir)." 1>&2
 elif [[ -f $indir && -d $(dirname $outdir) ]]
@@ -95,7 +95,7 @@ then
 	# input and output are directories
 	for i in $indir/*.${video}
 	do
-		file=$(basename $indir)
+		file=$(basename $i ".${video}")
 		outfile=$outdir/${file#.*}.${audio}
 		ffmpeg -y -i $i -f ${audio} $outfile 2> $debug
 	done
